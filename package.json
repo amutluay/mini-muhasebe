@@ -1,0 +1,12 @@
+{
+  "name": "mini-muhasebe",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build-standalone.mjs",
+    "build:check": "node scripts/build-standalone.mjs --check",
+    "dev": "python3 -m http.server 5173",
+    "test": "npm run build:check && node --test tests/*.test.js"
+  }
+}
