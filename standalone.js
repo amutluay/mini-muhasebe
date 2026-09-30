@@ -888,7 +888,7 @@ const bulkPrintSelections = new Set();
 const esc = value => String(value ?? '').replace(/[&<>"']/g, char => ({
   '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
 }[char]));
-const blankLine = () => ({ code: '', debit: '', credit: '', quantity: '', description: '' });
+const blankLine = (description = '') => ({ code: '', debit: '', credit: '', quantity: '', description });
 const todayInYear = () => {
   const now = new Date();
   return now.getFullYear() === YEAR ? `${YEAR}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}` : `${YEAR}-01-01`;
@@ -1377,7 +1377,8 @@ function accountRows(accounts) {
 
 function normalizeDraft() {
   const original = draft.id ? state.vouchers.find(item => item.id === draft.id) : null;
-  const lines = draft.lines.filter(line => line.code || line.debit || line.credit || line.quantity || line.description)
+  const lines = draft.lines.filter(line => line.code || line.debit || line.credit || line.quantity ||
+    (line.description && line.description !== draft.description))
     .map(line => ({ code: line.code, debit: parseMoney(line.debit), credit: parseMoney(line.credit),
       quantity: String(line.quantity || '').trim(), description: String(line.description || '').trim() }));
   return { id: draft.id || crypto.randomUUID(), number: original?.number ?? Number(draft.number), date: original?.date ?? draft.date,
@@ -1616,8 +1617,8 @@ app.addEventListener('click', async event => {
     else if (action === 'print-journal-two') await printJournalLayout(true);
     else if (action === 'print-selected-reports') await printSelectedReports();
     else if (action === 'copy-row' && (!draft.id || editingSaved)) { draft.lines.splice(index + 1, 0, { ...draft.lines[index] }); dirty = true; render(); }
-    else if (action === 'add-row' && (!draft.id || editingSaved)) { draft.lines.splice(index + 1, 0, blankLine()); dirty = true; render(); }
-    else if (action === 'remove-row' && (!draft.id || editingSaved)) { draft.lines.splice(index, 1); if (!draft.lines.length) draft.lines.push(blankLine()); dirty = true; render(); }
+    else if (action === 'add-row' && (!draft.id || editingSaved)) { draft.lines.splice(index + 1, 0, blankLine(draft.description)); dirty = true; render(); }
+    else if (action === 'remove-row' && (!draft.id || editingSaved)) { draft.lines.splice(index, 1); if (!draft.lines.length) draft.lines.push(blankLine(draft.description)); dirty = true; render(); }
     else if (action === 'upload-accounts') document.querySelector('#account-upload').click();
     else if (action === 'upload-backup') { if (settingsOpen) closeSettings(); document.querySelector('#backup-upload').click(); }
     else if (action === 'export-backup') { if (settingsOpen) closeSettings(); exportBackup(); }
@@ -1651,7 +1652,17 @@ app.addEventListener('input', event => {
   if (draft.id && !editingSaved && (target.id === 'voucher-description' || target.dataset.field)) return;
   if (target.id === 'template-start-date') { templateStartDate = target.value; updateTemplateApplyControls(); }
   else if (target.id === 'voucher-date' && !draft.id) { draft.date = target.value; dirty = true; }
-  else if (target.id === 'voucher-description') { draft.description = target.value; dirty = true; }
+  else if (target.id === 'voucher-description') {
+    const previous = draft.description;
+    draft.description = target.value;
+    draft.lines.forEach((line, index) => {
+      if (line.description && line.description !== previous) return;
+      line.description = target.value;
+      const input = app.querySelector(`#entry-body tr[data-row="${index}"] [data-field="description"]`);
+      if (input) input.value = target.value;
+    });
+    dirty = true;
+  }
   else if (target.id === 'account-search') {
     const term = target.value.toLocaleLowerCase('tr-TR').trim();
     document.querySelector('#account-list').innerHTML = accountRows(state.accounts.filter(account =>
@@ -1836,8 +1847,9 @@ window.addEventListener('keydown', event => {
       focusVoucherField(rowIndex, VOUCHER_FIELDS[columnIndex + 1]);
     } else if (rowIndex < draft.lines.length - 1) {
       focusVoucherField(rowIndex + 1, 'code');
-    } else if (Object.values(draft.lines[rowIndex]).some(value => String(value).trim())) {
-      draft.lines.push(blankLine());
+    } else if (Object.entries(draft.lines[rowIndex]).some(([key, value]) =>
+      String(value).trim() && (key !== 'description' || value !== draft.description))) {
+      draft.lines.push(blankLine(draft.description));
       dirty = true;
       render();
       focusVoucherField(rowIndex + 1, 'code');
