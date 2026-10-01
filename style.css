@@ -1518,6 +1518,9 @@ input:focus,select:focus,button:focus-visible {
   .report-table {
     min-width:0
   }
+  .trial-panel .report-table tfoot {
+    display:table-row-group
+  }
   .journal-scroll {
     overflow:visible
   }

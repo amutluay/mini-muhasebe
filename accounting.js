@@ -238,9 +238,9 @@ export function incomeStatement(accounts, vouchers) {
 
 export function balanceSheet(accounts, vouchers) {
   const all = ledger(accounts, vouchers);
-  const assets = all.filter(row => /^[12]/.test(row.code) && (row.debit || row.credit))
+  const assets = all.filter(row => /^[12]/.test(row.code) && row.debit !== row.credit)
     .map(row => ({ ...row, value: row.debit - row.credit }));
-  const liabilities = all.filter(row => /^[345]/.test(row.code) && (row.debit || row.credit))
+  const liabilities = all.filter(row => /^[345]/.test(row.code) && row.debit !== row.credit)
     .map(row => ({ ...row, value: row.credit - row.debit }));
   const periodResult = incomeStatement(accounts, vouchers).result;
   const assetTotal = assets.reduce((sum, row) => sum + row.value, 0);

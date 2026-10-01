@@ -20,7 +20,9 @@
 - Fiş girişindeki hesap önerilerinde bakiyesi sıfır olmayan hesapların kayıtlı fişlerden hesaplanan bakiyesi ve bakiye tarafı (B/A)
 - Fiş girişinde kaydetme, dengeleme, alanlar arası geçiş ve hesap seçimi için klavye kısayolları
 - Mizan, 6xx hareketlerinden gelir tablosu ve otomatik dönem sonucu içeren bilanço
+- Çok sayfalı Mizan PDF çıktısında toplam satırı yalnızca mizanın son sayfasında gösterilir
 - Bilançoda isteğe bağlı hesap grupları görünümü; sınıf ve iki haneli grup toplamları seçildiğinde ekranda ve baskıda gösterilir
+- Bilançoda net bakiyesi sıfır olan hesaplar gösterilmez
 - Tarih ve fiş numarasına göre sıralanan, fiş açıklamalarını gösteren yevmiye defteri; isteğe bağlı satır açıklamaları
 - Yevmiye Defteri'nde Yazdır1 ile A4 tek sütun baskısı ve her sayfa altında önceki sayfalardan devreden Borç/Alacak toplamları
 - Yevmiye Defteri'nde Yazdır2 ile A4 üzerinde sol sütundan sağ sütuna ilerleyen, fişleri bölmeden sayfalayan kompakt baskı ve her sayfa altında devreden Borç/Alacak toplamları; satır açıklamaları yalnızca "Satır Açıklaması Göster" seçiliyken yazdırılır

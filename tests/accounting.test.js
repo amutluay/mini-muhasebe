@@ -163,6 +163,21 @@ test('trial balance, income and balance sheet agree for normal entries', () => {
   assert.equal(balance.difference, 0);
 });
 
+test('balance sheet omits accounts whose debit and credit movements net to zero', () => {
+  const vouchers = [
+    voucher('first', 1, [line('100', 10000), line('500', 0, 10000)]),
+    voucher('second', 2, [line('500', 10000), line('100', 0, 10000)]),
+    voucher('third', 3, [line('120', 20000), line('500', 0, 20000)]),
+  ];
+  const report = balanceSheet(accounts, vouchers);
+  assert.deepEqual(report.assets.map(row => row.code), ['120']);
+  assert.deepEqual(report.liabilities.map(row => row.code), ['500']);
+  assert.equal(report.assetTotal, 20000);
+  assert.equal(report.liabilityTotal, 20000);
+  assert.deepEqual(groupedBalanceSheet(report).flatMap(main => main.groups.flatMap(group => group.rows.map(row => row.code))),
+    ['120', '500']);
+});
+
 test('grouped balance sheet sums account groups, classes, and period result', () => {
   const plan = [
     ...accounts,
