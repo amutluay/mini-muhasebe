@@ -1,5 +1,5 @@
 import { YEAR, parseMoney, formatMoney, formatMoneyEntry, formatSigned, formatVoucherOption, createVatLine, validateVoucher,
-  trialBalance, accountStatement, journalEntries, generalLedger, incomeStatement, balanceSheet,
+  trialBalance, ledger, formatAccountBalance, accountStatement, journalEntries, generalLedger, incomeStatement, balanceSheet,
   groupedBalanceSheet } from './accounting.js';
 import { parseAccountPlan, validateAccountReplacement } from './csv.js';
 import { loadState, saveState, validateBackup, withoutVouchers, renumberVouchersByDate, displayBusinessTitle } from './storage.js';
@@ -23,6 +23,8 @@ let selectedStatementCode = '';
 let noticeTimer;
 let printingJournal = false;
 let accountPicker = null;
+let balanceLabelsState = null;
+let balanceLabels = null;
 const bulkPrintSelections = new Set();
 
 const esc = value => String(value ?? '').replace(/[&<>"']/g, char => ({
@@ -39,6 +41,15 @@ const nextNumber = () => Math.max(state.nextNumber, ...state.vouchers.map(item =
 const freshDraft = () => ({ id: null, number: nextNumber(), date: todayInYear(), description: '', lines: [blankLine(), blankLine()] });
 const accountName = code => state.accounts.find(item => item.code === code)?.name || '';
 const sortedVouchers = () => [...state.vouchers].sort((a, b) => a.number - b.number);
+
+function savedAccountBalanceLabels() {
+  if (balanceLabelsState !== state) {
+    balanceLabels = new Map(ledger(state.accounts, state.vouchers)
+      .map(account => [account.code, formatAccountBalance(account)]));
+    balanceLabelsState = state;
+  }
+  return balanceLabels;
+}
 
 function draftFromVoucher(voucher) {
   return { ...voucher, lines: voucher.lines.map(line => ({
@@ -214,7 +225,11 @@ function drawAccountSuggestions() {
   accountPicker.matches = matches;
   accountPicker.activeIndex = matches.length ? Math.min(Math.max(accountPicker.activeIndex, 0), matches.length - 1) : -1;
   if (!matches.length) { closeAccountSuggestions(); return; }
-  menu.innerHTML = matches.map((account, index) => `<button type="button" class="account-suggestion ${index === accountPicker.activeIndex ? 'active' : ''}" role="option" id="account-option-${index}" aria-selected="${index === accountPicker.activeIndex}" data-account-code="${esc(account.code)}">${esc(account.code)} — ${esc(account.name)}</button>`).join('');
+  const balances = savedAccountBalanceLabels();
+  menu.innerHTML = matches.map((account, index) => {
+    const balance = balances.get(account.code);
+    return `<button type="button" class="account-suggestion ${index === accountPicker.activeIndex ? 'active' : ''}" role="option" id="account-option-${index}" aria-selected="${index === accountPicker.activeIndex}" data-account-code="${esc(account.code)}">${esc(account.code)} ${esc(account.name)}${balance ? ` (${esc(balance)})` : ''}</button>`;
+  }).join('');
   const rect = input.getBoundingClientRect();
   const width = Math.max(rect.width, 250);
   menu.style.width = `${Math.min(width, window.innerWidth - 16)}px`;
@@ -722,7 +737,6 @@ app.addEventListener('click', async event => {
   if (settingsOpen && event.target.matches('.settings-overlay')) { closeSettings(); return; }
   const tabButton = event.target.closest('[data-tab]');
   if (tabButton) {
-    if (activeTab === 'voucher' && tabButton.dataset.tab !== 'voucher' && !confirmLeave()) return;
     activeTab = tabButton.dataset.tab;
     render();
     return;

@@ -7,6 +7,7 @@
 - Üç haneli ana hesaplarla fiş girişi, güncelleme ve silme
 - Sistem tarafından artan sırayla atanan, kullanıcıya kapalı fiş numarası
 - Kayıtlı fişler önce salt okunur açılır; Fişi Güncelle tarih dahil alanları düzenlemeyi açar, Kaydet fiş numarasını koruyarak değişiklikleri kaydeder
+- Fiş taslağı kaydedilmeden menüler arasında geçilebilir; Fiş Girişi'ne dönüldüğünde girilen alanlar korunur
 - Kayıtlı fiş seçimi ve önceki/sonraki fiş gezintisi fiş numarasına göre sıralanır
 - Fiş alanında bir saniyelik kayıt durum mesajı ve ardından otomatik yeni boş fiş
 - Tüm şablonları listedeki sırayla doğrulayıp, Tarih alanından başlayarak her fişi bir gün sonra ve birer saniyelik kayıt bildirimiyle ayrı ayrı kaydetme
@@ -16,6 +17,7 @@
 - Borç ve alacak yazılırken otomatik binlik ayıracı; kuruş için virgül ve alan terk edilince iki ondalık basamak
 - Fiş girişinde %1, %10 ve %20 KDV butonlarıyla borç satırının altına 191, alacak satırının altına 391 hesaplı satır ekleme
 - Hesap kodu yazılırken girilen rakamlarla başlayan hesap önerileri
+- Fiş girişindeki hesap önerilerinde bakiyesi sıfır olmayan hesapların kayıtlı fişlerden hesaplanan bakiyesi ve bakiye tarafı (B/A)
 - Fiş girişinde kaydetme, dengeleme, alanlar arası geçiş ve hesap seçimi için klavye kısayolları
 - Mizan, 6xx hareketlerinden gelir tablosu ve otomatik dönem sonucu içeren bilanço
 - Bilançoda isteğe bağlı hesap grupları görünümü; sınıf ve iki haneli grup toplamları seçildiğinde ekranda ve baskıda gösterilir

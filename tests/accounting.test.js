@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { parseMoney, formatMoney, formatMoneyEntry, createVatLine, formatVoucherOption, validateVoucher, trialBalance, accountStatement, journalEntries, generalLedger, incomeStatement, balanceSheet, groupedBalanceSheet } from '../accounting.js';
+import { parseMoney, formatMoney, formatMoneyEntry, createVatLine, formatVoucherOption, validateVoucher, ledger, formatAccountBalance, trialBalance, accountStatement, journalEntries, generalLedger, incomeStatement, balanceSheet, groupedBalanceSheet } from '../accounting.js';
 import { parseAccountPlan, validateAccountReplacement } from '../csv.js';
 import { validateBackup, withoutVouchers, renumberVouchersByDate } from '../storage.js';
 
@@ -56,6 +56,21 @@ test('saved voucher label shows unique debit and credit accounts and debit total
   ]), date: '2026-01-30', description: 'KDV Mahsup' };
   assert.equal(formatVoucherOption(entry),
     '42 — 30.01.2026 — KDV Mahsup (B: 391 / A: 191,190) (T: 300.000,00)');
+});
+
+test('account selection shows saved net balance and actual balance side', () => {
+  const balances = ledger(accounts, [voucher('one', 1, [line('100', 1240000), line('500', 0, 1240000)])]);
+  const byCode = code => formatAccountBalance(balances.find(account => account.code === code));
+  assert.equal(byCode('100'), '12.400,00 B');
+  assert.equal(byCode('500'), '12.400,00 A');
+  assert.equal(byCode('120'), '');
+  const reverse = ledger(accounts, [voucher('two', 2, [line('500', 10000), line('100', 0, 10000)])]);
+  assert.equal(formatAccountBalance(reverse.find(account => account.code === '100')), '100,00 A');
+  const settled = ledger(accounts, [
+    voucher('three', 3, [line('100', 10000), line('500', 0, 10000)]),
+    voucher('four', 4, [line('500', 10000), line('100', 0, 10000)]),
+  ]);
+  assert.equal(formatAccountBalance(settled.find(account => account.code === '100')), '');
 });
 
 test('account statement lists used-account movements in date and voucher order with running side', () => {

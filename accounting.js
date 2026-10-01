@@ -127,6 +127,13 @@ export function ledger(accounts, vouchers) {
   return [...rows.values()].sort((a, b) => a.code.localeCompare(b.code, 'tr'));
 }
 
+export function formatAccountBalance(account) {
+  const amount = account.debitBalance || account.creditBalance || 0;
+  if (!amount) return '';
+  const side = account.debitBalance > 0 ? 'B' : 'A';
+  return `${formatMoney(amount)} ${side}`;
+}
+
 export function trialBalance(accounts, vouchers) {
   const rows = ledger(accounts, vouchers)
     .filter(row => row.debit || row.credit)
