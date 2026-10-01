@@ -1,4 +1,4 @@
-import { YEAR, parseMoney, formatMoney, formatMoneyEntry, formatSigned, formatVoucherOption, validateVoucher,
+import { YEAR, parseMoney, formatMoney, formatMoneyEntry, formatSigned, formatVoucherOption, createVatLine, validateVoucher,
   trialBalance, accountStatement, journalEntries, generalLedger, incomeStatement, balanceSheet,
   groupedBalanceSheet } from './accounting.js';
 import { parseAccountPlan, validateAccountReplacement } from './csv.js';
@@ -174,7 +174,7 @@ function renderVoucher() {
       <label class="field description-field"><span>Fiş Açıklaması</span><input id="voucher-description" maxlength="250" placeholder="Fiş açıklaması" value="${esc(draft.description)}" ${inputDisabled} /></label>
     </div>
     <div class="list-toolbar"><div class="field compact"><select id="voucher-select" aria-label="Kayıtlı fişler"><option value="">Kayıtlı Fişler (${options.length})</option>${options.map(item => `<option value="${esc(item.id)}" ${draft.id === item.id ? 'selected' : ''}>${esc(formatVoucherOption(item))}</option>`).join('')}</select></div><div class="toolbar-actions"><button class="button primary" data-action="edit" ${!draft.id || editingSaved ? 'disabled' : ''}>Fişi Güncelle</button><button class="button" data-action="previous">← Önceki Fiş</button><button class="button" data-action="next">Sonraki Fiş →</button><button class="button" data-tab="accounts">Hesap Planı</button></div></div>
-    <div class="table-scroll"><table class="entry-table"><thead><tr><th>Hesap Kodu ve Adı</th><th>Borç</th><th>Alacak</th><th>Miktar</th><th>Açıklama</th><th>Kopyala</th><th>Sil</th><th>Ekle</th></tr></thead><tbody id="entry-body">${draft.lines.map((line, index) => rowHtml(line, index, locked)).join('')}</tbody><tfoot><tr><th>TOPLAM</th><th id="total-debit">${formatMoney(totals.debit)}</th><th id="total-credit">${formatMoney(totals.credit)}</th><th colspan="5"><span id="balance-indicator" class="balance-indicator ${totals.debit === totals.credit ? 'balanced' : 'unbalanced'}">${totals.debit === totals.credit ? 'Dengede' : `Fark: ${formatMoney(Math.abs(totals.debit - totals.credit))}`}</span></th></tr></tfoot></table></div>
+    <div class="table-scroll"><table class="entry-table"><thead><tr><th>Hesap Kodu ve Adı</th><th>Borç</th><th>Alacak</th><th>Miktar</th><th>Açıklama</th><th>KDV Ekle</th><th>Sil</th><th>Ekle</th></tr></thead><tbody id="entry-body">${draft.lines.map((line, index) => rowHtml(line, index, locked)).join('')}</tbody><tfoot><tr><th>TOPLAM</th><th id="total-debit">${formatMoney(totals.debit)}</th><th id="total-credit">${formatMoney(totals.credit)}</th><th colspan="5"><span id="balance-indicator" class="balance-indicator ${totals.debit === totals.credit ? 'balanced' : 'unbalanced'}">${totals.debit === totals.credit ? 'Dengede' : `Fark: ${formatMoney(Math.abs(totals.debit - totals.credit))}`}</span></th></tr></tfoot></table></div>
     <div id="account-suggestions" class="account-suggestions" role="listbox" hidden></div>
     <div class="voucher-bottom"><div class="toolbar-actions"><button class="button primary" data-action="save" ${inputDisabled}>Kaydet</button><button class="button" data-action="balance-voucher" ${inputDisabled}>Fişi Dengele</button><button class="button" data-action="new">Yeni</button><button class="button danger" data-action="delete" ${draft.id ? '' : 'disabled'}>Sil</button></div><div class="toolbar-actions"><button class="button" data-action="apply-all-templates">Tüm Şablonu Uygula</button><select id="template-select" class="template-select" aria-label="Şablon seç"><option value="">(Şablon seçin)</option>${TEMPLATES.map(template => `<option value="${esc(template.id)}">${esc(template.name)}</option>`).join('')}</select></div></div>
     <div id="save-status" class="save-status" role="status" aria-live="polite" hidden>Fişiniz kaydediliyor...</div>
@@ -189,7 +189,7 @@ function rowHtml(line, index, locked = false) {
     <td><input class="cell-input money-input" data-field="credit" inputmode="decimal" value="${esc(line.credit)}" placeholder="0,00" aria-label="${index + 1}. satır alacak" ${disabled} /></td>
     <td><input class="cell-input qty-input" data-field="quantity" inputmode="decimal" value="${esc(line.quantity)}" placeholder="—" aria-label="${index + 1}. satır miktar" ${disabled} /></td>
     <td><input class="cell-input" data-field="description" value="${esc(line.description)}" placeholder="Açıklama" aria-label="${index + 1}. satır açıklama" ${disabled} /></td>
-    <td><button class="mini-button" data-action="copy-row" data-index="${index}" aria-label="${index + 1}. satırı kopyala" ${disabled}>Kopyala</button></td>
+    <td class="vat-cell"><div class="vat-buttons">${[1, 10, 20].map(rate => `<button class="mini-button vat-button" data-action="add-vat" data-index="${index}" data-rate="${rate}" aria-label="${index + 1}. satıra %${rate} KDV ekle" title="%${rate} KDV ekle" ${disabled}>%${rate}</button>`).join('')}</div></td>
     <td><button class="mini-button" data-action="remove-row" data-index="${index}" aria-label="${index + 1}. satırı sil" ${disabled}>Sil</button></td>
     <td><button class="mini-button" data-action="add-row" data-index="${index}" aria-label="${index + 1}. satırdan sonra ekle" ${disabled}>+Satır</button></td></tr>`;
 }
@@ -756,7 +756,15 @@ app.addEventListener('click', async event => {
     else if (action === 'print-journal-one') await printJournalLayout(false);
     else if (action === 'print-journal-two') await printJournalLayout(true);
     else if (action === 'print-selected-reports') await printSelectedReports();
-    else if (action === 'copy-row' && (!draft.id || editingSaved)) { draft.lines.splice(index + 1, 0, { ...draft.lines[index] }); dirty = true; render(); }
+    else if (action === 'add-vat' && (!draft.id || editingSaved)) {
+      const vatLine = createVatLine(draft.lines[index], Number(button.dataset.rate));
+      if (!state.accounts.some(account => account.code === vatLine.code)) {
+        throw new Error(`${vatLine.code} hesabı hesap planında bulunamadı.`);
+      }
+      draft.lines.splice(index + 1, 0, vatLine);
+      dirty = true;
+      render();
+    }
     else if (action === 'add-row' && (!draft.id || editingSaved)) { draft.lines.splice(index + 1, 0, blankLine(draft.description)); dirty = true; render(); }
     else if (action === 'remove-row' && (!draft.id || editingSaved)) { draft.lines.splice(index, 1); if (!draft.lines.length) draft.lines.push(blankLine(draft.description)); dirty = true; render(); }
     else if (action === 'upload-accounts') document.querySelector('#account-upload').click();

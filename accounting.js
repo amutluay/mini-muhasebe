@@ -19,6 +19,26 @@ export function formatMoney(cents = 0) {
   });
 }
 
+export function createVatLine(source, rate) {
+  if (![1, 10, 20].includes(rate)) throw new Error('Geçersiz KDV oranı.');
+  const debit = parseMoney(source.debit);
+  const credit = parseMoney(source.credit);
+  if (debit === null || credit === null || Boolean(debit) === Boolean(credit)) {
+    throw new Error('KDV eklemek için satırda yalnızca geçerli bir borç veya alacak tutarı girin.');
+  }
+  const amount = Math.round((debit || credit) * rate / 100);
+  if (!Number.isSafeInteger(amount) || amount <= 0) {
+    throw new Error('Hesaplanan KDV tutarı en az 0,01 olmalı.');
+  }
+  return {
+    code: debit ? '191' : '391',
+    debit: debit ? formatMoney(amount) : '',
+    credit: credit ? formatMoney(amount) : '',
+    quantity: '',
+    description: source.description || '',
+  };
+}
+
 export function formatMoneyEntry(value, caret = String(value ?? '').length) {
   const raw = String(value ?? '');
   const cleaned = raw.replace(/[^\d.,]/g, '');

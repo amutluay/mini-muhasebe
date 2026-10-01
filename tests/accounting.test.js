@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { parseMoney, formatMoney, formatMoneyEntry, formatVoucherOption, validateVoucher, trialBalance, accountStatement, journalEntries, generalLedger, incomeStatement, balanceSheet, groupedBalanceSheet } from '../accounting.js';
+import { parseMoney, formatMoney, formatMoneyEntry, createVatLine, formatVoucherOption, validateVoucher, trialBalance, accountStatement, journalEntries, generalLedger, incomeStatement, balanceSheet, groupedBalanceSheet } from '../accounting.js';
 import { parseAccountPlan, validateAccountReplacement } from '../csv.js';
 import { validateBackup, withoutVouchers, renumberVouchersByDate } from '../storage.js';
 
@@ -33,6 +33,20 @@ test('amount fields group digits while typing and allow cents', () => {
   assert.deepEqual(formatMoneyEntry('1.23'), { value: '123', caret: 3 });
   assert.deepEqual(formatMoneyEntry('0,'), { value: '0,', caret: 2 });
   assert.equal(parseMoney(formatMoneyEntry('1234,56').value), 123456);
+});
+
+test('KDV buttons calculate cents and keep the source side and description', () => {
+  for (const [rate, expected] of [[1, '1,23'], [10, '12,35'], [20, '24,69']]) {
+    assert.deepEqual(createVatLine({ debit: '123,45', credit: '', description: 'Mal alımı' }, rate), {
+      code: '191', debit: expected, credit: '', quantity: '', description: 'Mal alımı',
+    });
+    assert.deepEqual(createVatLine({ debit: '', credit: '123,45', description: 'Satış' }, rate), {
+      code: '391', debit: '', credit: expected, quantity: '', description: 'Satış',
+    });
+  }
+  assert.throws(() => createVatLine({ debit: '', credit: '' }, 10));
+  assert.throws(() => createVatLine({ debit: '10', credit: '10' }, 10));
+  assert.throws(() => createVatLine({ debit: '0,01', credit: '' }, 1));
 });
 
 test('saved voucher label shows unique debit and credit accounts and debit total', () => {

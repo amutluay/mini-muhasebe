@@ -13,6 +13,7 @@
 - Fiş girişindeki Tüm Şablonu Uygula düğmesi Şablon Uygula sekmesini tüm seçenekler işaretli olarak açar ve fiş tarihini başlangıç tarihi yapar
 - Borç ve alacak eşitliği, hesap kodu ve fiş numarası doğrulaması
 - Borç ve alacak yazılırken otomatik binlik ayıracı; kuruş için virgül ve alan terk edilince iki ondalık basamak
+- Fiş girişinde %1, %10 ve %20 KDV butonlarıyla borç satırının altına 191, alacak satırının altına 391 hesaplı satır ekleme
 - Hesap kodu yazılırken girilen rakamlarla başlayan hesap önerileri
 - Fiş girişinde kaydetme, dengeleme, alanlar arası geçiş ve hesap seçimi için klavye kısayolları
 - Mizan, 6xx hareketlerinden gelir tablosu ve otomatik dönem sonucu içeren bilanço
@@ -77,7 +78,7 @@ Başlıklar `Hesap Kodu,Hesap Adı,Taraf` olmalıdır. Hesap kodu benzersiz ve �
 
 - Gelir tablosu yalnızca hareket görmüş 6xx hesaplarını gösterir. Net satışlar, brüt satış, faaliyet, dönem ve dönem net kârı veya zararı ara toplamları hesapların net alacak eksi borç bakiyelerinden oluşur. 7xx ve 9xx hesapları otomatik aktarılmaz.
 - Bilanço 1xx–2xx hesaplarını aktif, 3xx–5xx hesaplarını pasif olarak gösterir; 6xx dönem sonucu pasife eklenir. Aktif ve pasif eşit değilse uyarı çıkar.
-- KDV, sürekli stok takibi ve dönem sonu aktarım fişleri otomatik oluşturulmaz. Satılan mal maliyeti fişi yalnızca ilgili şablon seçilince taslak olarak hazırlanır. Miktar alanı şimdilik bilgilendiricidir.
+- KDV satırları fiş girişindeki oran butonuyla isteğe bağlı eklenir; sürekli stok takibi ve dönem sonu aktarım fişleri otomatik oluşturulmaz. Satılan mal maliyeti fişi yalnızca ilgili şablon seçilince taslak olarak hazırlanır. Miktar alanı şimdilik bilgilendiricidir.
 - **Kuruluş (102/500)** şablonu, 102 Bankalar hesabına borç ve 500 Sermaye hesabına alacak yazar. Fiş ve satır açıklamaları "Bankaya yatan para ile kuruluş" olur. Her seçimde 100.000–200.000 arasında, 1.000'in katı yeni bir tutar hazırlanır; fiş kullanıcı Kaydet'e basınca saklanır.
 - **Ticari Mal Alış Veresiye (153/320)** şablonu, 153 Ticari Mallar hesabına borç ve 320 Satıcılar hesabına alacak yazar. Fiş ve satır açıklamaları "Ticari Mal alışı veresiye" olur. Her seçimde 500.000–1.000.000 arasında, 1.000'in katı yeni bir tutar hazırlanır; fiş kullanıcı Kaydet'e basınca saklanır.
 - **Satış Veresiye (120/600)** şablonu, 120 Alıcılar hesabına borç ve 600 Yurt İçi Satışlar hesabına alacak yazar. Fiş ve satır açıklamaları "Satış Veresiye" olur. Tutar, kayıtlı fişlerden hesaplanan 153 Ticari Mallar hesabının borç bakiyesinin %70–%130 aralığında, 1.000'in katı seçilir. Bu aralıkta uygun tutar yoksa şablon uygulanmaz. Fiş kullanıcı Kaydet'e basınca saklanır.

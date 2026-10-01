@@ -469,6 +469,22 @@ input:focus,select:focus,button:focus-visible {
 .mini-button:hover {
   background:#edf5ff
 }
+.entry-table td.vat-cell {
+  padding:5px 2px
+}
+.vat-buttons {
+  display:flex;
+  gap:1px;
+  width:100%
+}
+.vat-button {
+  flex:1;
+  min-width:0;
+  padding:4px 0;
+  font-size:9px;
+  font-weight:700;
+  border-radius:5px
+}
 .entry-table td:nth-child(n+6) {
   text-align:center
 }
