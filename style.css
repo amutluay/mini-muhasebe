@@ -617,7 +617,7 @@ input:focus,select:focus,button:focus-visible {
 .trial-account-row,.income-account-row,.balance-account-row,.statement-entry-row {
   cursor:pointer
 }
-.report-table tfoot th {
+.report-table tfoot th,.report-table .trial-total-row th {
   background:#eaf2fc;
   border-bottom:0;
   font-size:11px
@@ -1518,8 +1518,9 @@ input:focus,select:focus,button:focus-visible {
   .report-table {
     min-width:0
   }
-  .trial-panel .report-table tfoot {
-    display:table-row-group
+  .trial-panel .trial-total-row {
+    break-inside:avoid;
+    page-break-inside:avoid
   }
   .journal-scroll {
     overflow:visible
