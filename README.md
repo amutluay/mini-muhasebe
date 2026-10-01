@@ -6,7 +6,8 @@
 
 - Üç haneli ana hesaplarla fiş girişi, güncelleme ve silme
 - Sistem tarafından artan sırayla atanan, kullanıcıya kapalı fiş numarası
-- Kayıtlı fişler önce salt okunur açılır; Fişi Güncelle düzenlemeyi açar, Kaydet aynı fişi tarihini ve numarasını koruyarak kaydeder
+- Kayıtlı fişler önce salt okunur açılır; Fişi Güncelle tarih dahil alanları düzenlemeyi açar, Kaydet fiş numarasını koruyarak değişiklikleri kaydeder
+- Kayıtlı fiş seçimi ve önceki/sonraki fiş gezintisi fiş numarasına göre sıralanır
 - Fiş alanında bir saniyelik kayıt durum mesajı ve ardından otomatik yeni boş fiş
 - Tüm şablonları listedeki sırayla doğrulayıp, Tarih alanından başlayarak her fişi bir gün sonra ve birer saniyelik kayıt bildirimiyle ayrı ayrı kaydetme
 - Şablon Uygula sekmesinde şablonların tümünü veya seçilenlerini başlangıç tarihinden itibaren ardışık günlere kaydetme; bitiş tarihi seçimlere göre hesaplanır

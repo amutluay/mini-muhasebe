@@ -1049,7 +1049,7 @@ function renderVoucher() {
   return `<section class="panel voucher-panel">
     <div class="section-heading"><div><span class="eyebrow">YEVMİYE KAYDI</span><h1>Fiş Girişi</h1><p>Borç ve alacak satırlarını girip fişi kaydedin.</p></div><button class="button quiet" data-action="settings">Ayarlar</button></div>
     <div class="voucher-meta">
-      <label class="field"><span>Tarih</span><input id="voucher-date" type="date" min="${YEAR}-01-01" max="${YEAR}-12-31" value="${esc(draft.date)}" ${draft.id ? 'disabled title="Kayıtlı fişin tarihi değiştirilemez"' : ''} /></label>
+      <label class="field"><span>Tarih</span><input id="voucher-date" type="date" min="${YEAR}-01-01" max="${YEAR}-12-31" value="${esc(draft.date)}" ${inputDisabled} /></label>
       <label class="field"><span>Fiş No</span><input id="voucher-number" type="text" value="${esc(draft.number)}" title="Fiş numarası sistem tarafından atanır" readonly aria-readonly="true" /></label>
       <label class="field description-field"><span>Fiş Açıklaması</span><input id="voucher-description" maxlength="250" placeholder="Fiş açıklaması" value="${esc(draft.description)}" ${inputDisabled} /></label>
     </div>
@@ -1401,7 +1401,7 @@ function normalizeDraft() {
     (line.description && line.description !== draft.description))
     .map(line => ({ code: line.code, debit: parseMoney(line.debit), credit: parseMoney(line.credit),
       quantity: String(line.quantity || '').trim(), description: String(line.description || '').trim() }));
-  return { id: draft.id || crypto.randomUUID(), number: original?.number ?? Number(draft.number), date: original?.date ?? draft.date,
+  return { id: draft.id || crypto.randomUUID(), number: original?.number ?? Number(draft.number), date: draft.date,
     description: String(draft.description || '').trim(), lines };
 }
 
@@ -1677,9 +1677,9 @@ app.addEventListener('dblclick', event => {
 app.addEventListener('input', event => {
   if (saving || applyingAllTemplates) return;
   const target = event.target;
-  if (draft.id && !editingSaved && (target.id === 'voucher-description' || target.dataset.field)) return;
+  if (draft.id && !editingSaved && (target.id === 'voucher-date' || target.id === 'voucher-description' || target.dataset.field)) return;
   if (target.id === 'template-start-date') { templateStartDate = target.value; updateTemplateApplyControls(); }
-  else if (target.id === 'voucher-date' && !draft.id) { draft.date = target.value; dirty = true; }
+  else if (target.id === 'voucher-date') { draft.date = target.value; dirty = true; }
   else if (target.id === 'voucher-description') {
     const previous = draft.description;
     draft.description = target.value;
